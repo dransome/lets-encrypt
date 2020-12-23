@@ -45,7 +45,9 @@ mkdir -p $DIR/var/log/letsencrypt
     iptables -I INPUT -p tcp -m tcp --dport ${LE_PORT} -j ACCEPT
     ip6tables -I INPUT -p tcp -m tcp --dport ${LE_PORT} -j ACCEPT
     iptables -t nat -I PREROUTING -p tcp -m tcp ! -s 127.0.0.1/32 --dport 80 -j REDIRECT --to-ports ${PROXY_PORT}
+    iptables -t nat -I PREROUTING -p tcp -m tcp ! -s 127.0.0.1/32 --dport 443 -j REDIRECT --to-ports ${PROXY_PORT}
     ip6tables -t nat -I PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports ${LE_PORT} || ip6tables -I INPUT -p tcp -m tcp --dport 80 -j DROP
+    ip6tables -t nat -I PREROUTING -p tcp -m tcp --dport 443 -j REDIRECT --to-ports ${LE_PORT} || ip6tables -I INPUT -p tcp -m tcp --dport 443 -j DROP
 }
 result_code=0;
 
@@ -56,7 +58,9 @@ parseDomains "${resp}"
 
 [[ "$webroot" == "false" ]] && {
     iptables -t nat -D PREROUTING -p tcp -m tcp ! -s 127.0.0.1/32 --dport 80 -j REDIRECT --to-ports ${PROXY_PORT}
+    iptables -t nat -D PREROUTING -p tcp -m tcp ! -s 127.0.0.1/32 --dport 443 -j REDIRECT --to-ports ${PROXY_PORT}
     ip6tables -t nat -D PREROUTING -p tcp -m tcp --dport 80 -j REDIRECT --to-ports ${LE_PORT} || ip6tables -I INPUT -p tcp -m tcp --dport 80 -j ACCEPT
+    ip6tables -t nat -D PREROUTING -p tcp -m tcp --dport 443 -j REDIRECT --to-ports ${LE_PORT} || ip6tables -I INPUT -p tcp -m tcp --dport 443 -j ACCEPT
     iptables -D INPUT -p tcp -m tcp --dport ${PROXY_PORT} -j ACCEPT
     iptables -D INPUT -p tcp -m tcp --dport ${LE_PORT} -j ACCEPT
     ip6tables -D INPUT -p tcp -m tcp --dport ${LE_PORT} -j ACCEPT
